@@ -4,11 +4,19 @@ import com.openup.camera_api2.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+//import android.hardware.camera2;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -48,12 +56,13 @@ public class ViewFinderActivty extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        checkCameraHardware();
         setContentView(R.layout.activity_view_finder_activty);
+        getCameraInfo();
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
         final View contentView = findViewById(R.id.fullscreen_content);
-
+        //Button take_picture = find
         // Set up an instance of SystemUiHider to control the system UI for
         // this activity.
         mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
@@ -101,6 +110,7 @@ public class ViewFinderActivty extends Activity {
             @Override
             public void onClick(View view) {
                 if (TOGGLE_ON_CLICK) {
+                    checkCameraHardware();
                     mSystemUiHider.toggle();
                 } else {
                     mSystemUiHider.show();
@@ -111,7 +121,7 @@ public class ViewFinderActivty extends Activity {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.capture_button).setOnTouchListener(mDelayHideTouchListener);
     }
 
     @Override
@@ -155,5 +165,41 @@ public class ViewFinderActivty extends Activity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    /** Check if this device has a camera */
+    private boolean checkCameraHardware() {
+        if (this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            // this device has a camera
+            Log.d("DBG001", "Has camera");
+            return true;
+        } else {
+            // no camera on this device
+            Log.e("DBG001", "No camera");
+            return false;
+        }
+    }
+
+    /** A safe way to get an instance of the Camera object. */
+    public CameraManager getCameraInfo() {
+        CameraManager c = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
+        try {
+            //c.AvailabilityCallback(); // attempt to get a Camera instance
+            Log.e("DBG001", "try");
+
+            for(final String cameraId : c.getCameraIdList()){
+                Log.e("DBG01", "cameraId: "+ cameraId);
+                CameraCharacteristics characteristics = c.getCameraCharacteristics(cameraId);
+                int cOrientation = characteristics.get(CameraCharacteristics.LENS_FACING);
+                Log.e("DBG01", "Front: "+ CameraCharacteristics.LENS_FACING_FRONT);
+                Log.e("DBG01", "Orientation: "+ cOrientation);
+                //if(cOrientation == CameraCharacteristics.LENS_FACING_FRONT) return cameraId;
+            }
+        }
+        catch (Exception e){
+            // Camera is not available (in use or does not exist)
+    //        Log.e("DBG001", "catch");
+        }
+        return c; // returns null if camera is unavailable
     }
 }
