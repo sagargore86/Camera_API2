@@ -188,12 +188,11 @@ public class ViewFinderActivty extends Activity {
             Log.e("DBG001", "try");
 
             for(final String cameraId : c.getCameraIdList()){
-                Log.e("DBG01", "cameraId: ", cameraId);
+                Log.e("DBG01", "cameraId: " + cameraId);
                 CameraCharacteristics characteristics = c.getCameraCharacteristics(cameraId);
                 int cOrientation = characteristics.get(CameraCharacteristics.LENS_FACING);
-                Log.e("DBG01", "Front: ", CameraCharacteristics.LENS_FACING_FRONT);
-                Log.e("DBG01", "Orientation: ", cOrientation);
-                //if(cOrientation == CameraCharacteristics.LENS_FACING_FRONT) return cameraId;
+                Log.e("DBG01", "Front: "+ CameraCharacteristics.LENS_FACING_FRONT);
+                Log.e("DBG01", "Orientation: " + cOrientation);
             }
         }
         catch (Exception e){
